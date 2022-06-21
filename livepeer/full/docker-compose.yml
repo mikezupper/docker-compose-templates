@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  orchestrator:
+    image: livepeer/go-livepeer:0.5.29
+    hostname: "orchestrator"
+    container_name: "orchestrator"
+    restart: unless-stopped
+    ports:
+      - 9935:9935
+    volumes:
+      - /home/livepeer/test-orch-frankfurt/docker_volumes/lpData:/root/.lpData
+    command: '-ethUrl={{RPC_URL}}
+              -ethPassword=/root/.lpData/eth_secret.txt
+              -network=arbitrum-one-mainnet
+              -ethAcctAddr={{ETH_ACCT}}
+              -serviceAddr={{SERVICE_ADDR_AND_PORT}}
+              -orchAddr={{ORCH_ADDR_AND_PORT}}
+              -orchSecret=/root/.lpData/orch_secret.txt
+              -cliAddr={{CLI_ADDR_AND_PORT}}
+              -orchestrator=true
+              -monitor=true
+              -reward=true
+              -pricePerUnit=1100
+              -reward=true
+              -blockPollingInterval=3
+              -v=6
+              -maxSessions=5
+              -autoAdjustPrice=false
+              -maxGasPrice=20000000000'
+    logging:
+      driver: "json-file"
+      options:
+        tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus-orchestrator
+    restart: unless-stopped
+    volumes:
+      - /home/livepeer/test-orch-frankfurt/docker_volumes/prometheus/data:/prometheus
+      - /home/livepeer/test-orch-frankfurt/docker_volumes/prometheus/config/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - 9090:9090
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+
+  node_exporter:
+    image: quay.io/prometheus/node-exporter:latest
+    container_name: node_exporter-orchestrator
+    command:
+      - '--path.rootfs=/host'
+    pid: host
+    restart: unless-stopped
+    volumes:
+      - '/:/host:ro,rslave'
+
+  cadvisor:
+    image: google/cadvisor:latest
+    container_name: cadvisor-orchestrator
+    restart: unless-stopped
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg
