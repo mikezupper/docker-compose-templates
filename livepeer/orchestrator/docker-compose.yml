@@ -3,21 +3,21 @@ version: '3'
 services:
   orchestrator:
     image: livepeer/go-livepeer:0.5.33
-    container_name: "combined-orchestrator"
-    runtime: nvidia
+    container_name: "orchestrator"
     restart: unless-stopped
     ports:
        - 8935:8935
     volumes:
       - lpdata:/root/.lpData
     command: '-ethUrl=https://arb1.arbitrum.io/rpc
-              -ethPassword=/root/.lpData/eth-acct-secret.txt
+              -ethPassword=/root/.lpData/eth-secret.txt
               -network=arbitrum-one-mainnet
               -ethAcctAddr=YOUR_ETH_ACCT_ADDR
               -serviceAddr=YOUR_ORCH_IP:8935
+              -orchAddr=YOUR_ORCH_IP:8935
+              -orchSecret=/root/.lpData/orch-secret.txt
               -cliAddr=orchestrator:7935
               -orchestrator=true
-              -transcoder=true
               -monitor=true
               -pricePerUnit=1100
               -v=6

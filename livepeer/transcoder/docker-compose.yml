@@ -1,0 +1,23 @@
+version: '3.8'
+services:
+  transcoder:
+    image: livepeer/go-livepeer:0.5.33
+    container_name: "transcoder"
+    runtime: nvidia
+    restart: unless-stopped
+    volumes:
+      - "./trans/:/root/.lpData"
+    command: '-v=6
+              -monitor=true
+              -transcoder=true
+              -nvidia=all 
+              -orchSecret=/root/.lpData/orch_secret.txt
+              -orchAddr=YOUR_ORCH_IP:8935
+              -cliAddr=transcoder:7935'
+volumes:
+  lpdata:
+    external: true
+networks:
+  default:
+    name: livepeer
+    external: true
