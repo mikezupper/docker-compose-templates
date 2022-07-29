@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  arbitrum-node:
+    image: offchainlabs/arb-node:v1.4.0-f4bbe91
+    container_name: arbitrum-node
+    volumes:
+      - arbitrum:/home/user/.arbitrum/mainnet
+    ports:
+      - 8547:8547
+      - 8548:8548
+    command: ["--l1.url=YOUR_L1_RPC_URL"]
+volumes:
+  arbitrum:
+    external: true
+networks:
+  default:
+    name: blockchain
+    external: true
